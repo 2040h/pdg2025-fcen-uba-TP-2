@@ -219,6 +219,25 @@ int main(int argc, char **argv) {
       }
 
       // TODO ...
+      using vf = vector<float>;
+      using vi = vector<int>;
+
+      ifs->setNormalPerVertex(false);
+      vf& normal = ifs->getNormal();
+      vi& normalIndex = ifs->getNormalIndex();
+      normal.clear();
+      getNormalIndex.clear();
+
+      ifs->setColorPerVertex(false);
+      vf& color = ifs->getColor();
+      vi& colorIndex = ifs->getColorIndex();
+      color.clear();
+      colorIndex.clear();
+
+      vf& texCoord = ifs->getTexCoord();
+      vi& texCoordIndex = ifs->getTexCoordIndex();
+      texCoord.clear();
+      texCoordIndex.clear();
 
       if(D._debug) {
         cout << "  after processing" << endl;

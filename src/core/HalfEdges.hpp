@@ -5,7 +5,7 @@
 //
 // HalfEdges.hpp (Assignment 2)
 //
-// Written by: <Your Name>
+// Written by: Rundong He
 //
 // Software developed for the course
 // Digital Geometry Processing

@@ -5,7 +5,7 @@
 //
 // HalfEdges.cpp (Assignment 2)
 //
-// Written by: <Your Name>
+// Written by: Rundong He
 //
 // Software developed for the course
 // Digital Geometry Processing
@@ -51,8 +51,8 @@
 HalfEdges::HalfEdges(const int nVertices, const vector<int>&  coordIndex):
   Edges(nVertices), // a graph with no edges is created here
   _coordIndex(coordIndex),
-  _twin(),
-  _face(),
+  _twin(coordIndex.size(), -1),
+  _face(coordIndex.size(), -1),
   _firstCornerEdge(),
   _cornerEdge()
 {
@@ -71,6 +71,8 @@ HalfEdges::HalfEdges(const int nVertices, const vector<int>&  coordIndex):
   //   if _coordIndex[iC]<0 then
   //   _face[
   
+  //          ⬆ ???
+  
   int nV = nVertices;
   int nC = static_cast<int>(_coordIndex.size()); // number of corners
 
@@ -81,6 +83,11 @@ HalfEdges::HalfEdges(const int nVertices, const vector<int>&  coordIndex):
   //    nV, and then use the method Edges::_reset() to adjust the
   //    number of vertices of the graph, if necessary; or you can
   //    abort throwing an StrException
+
+  for (int iC = 0; iC < nC; ++iC) {
+    int iV = coordIndex[iC];
+    if (-1 > iV or iV >= nV) throw new StrException("iV violates vertex range");
+  }
   
   // 1) create an empty vector<int> to count the number of incident
   //    faces per edge; size is not known at this point because the
@@ -99,14 +106,23 @@ HalfEdges::HalfEdges(const int nVertices, const vector<int>&  coordIndex):
     // - find the next corner within the face
     // - get the two vertex indices and insert an edge in the graph if
     //   not already there
-    iV0 = /*?*/ 0;
-    iV1 = /*?*/ 0;
-    // - note that Edges::_insertEdge return the edge index number of
-    //   a newly created edge, or the index of an extisting edge
-    iE = _insertEdge(iV0,iV1); // Edges method
-    // - note that iE might be >= nFacesEdge.size() at this point, and
-    //   you may need to increase the size of nFacesEdge first
-    // - ...
+    for (iC = iC0; iC < iC1; ++iC) {
+      _face[iC] = iF;
+      int x = iC;
+      int y = (iC + 1 == iC1) ? iC0 : iC + 1;
+
+      iV0 = _coordIndex[x];
+      iV1 = _coordIndex[y];
+
+      // - note that Edges::_insertEdge return the edge index number of
+      //   a newly created edge, or the index of an extisting edge
+      iE = _insertEdge(iV0,iV1); // Edges method
+      // - note that iE might be >= nFacesEdge.size() at this point, and
+      //   you may need to increase the size of nFacesEdge first
+      // - ...
+      if (iE >= nFacesEdge.size()) nFacesEdge.resize(iE + 1, 0);
+      nFacesEdge[iE]++;
+    }
 
     // increment variables to continue processing next face
     iC0 = iC1+1; iF++;
@@ -115,7 +131,7 @@ HalfEdges::HalfEdges(const int nVertices, const vector<int>&  coordIndex):
   int nE = getNumberOfEdges();
   
   // 3) create an array to hold the first twin corner for each edge
-  vector<int> twinCorner;
+  vector<int> twinCorner(nE, -1);
   // - the size of this array should be equal to the number of edges
   // - initialize it with -1's
 
@@ -126,6 +142,24 @@ HalfEdges::HalfEdges(const int nVertices, const vector<int>&  coordIndex):
   // - if twinCorner[iE]<1 save iC in twinCorner[iE]
   //   otherwise save the value stored in twinCorner[iE] in _twin[iC]
   //   and iC in _twin[_twin[iC]]
+  for(iF=iC0=iC1=0;iC1<nC;iC1++) {
+    if(_coordIndex[iC1]>=0) continue;
+
+    for (iC = iC0; iC < iC1; ++iC) {
+      int src = iC;
+      int dst = (iC + 1 == iC1) ? iC0 : iC + 1;
+
+      iE = getEdge(src, dst);
+      if (twinCorner[iE] < 0)
+        twinCorner[iE] = iC;
+      else {
+        _twin[iC] = twinCorner[iE];
+        _twin[_twin[iC]] = iC;
+      }
+    }
+
+    iC0 = iC1+1; iF++;
+  }
 
   // consistently oriented
   /* \                  / */

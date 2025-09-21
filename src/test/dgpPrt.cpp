@@ -56,5 +56,17 @@ void printIndexedFaceSetInfo
 
   // TODO
 
+  #define print_info(key, value) ostr << indent << indent << key << "\t\t = " << value << endl
+  print_info("shapeName", ifs.getName());
+  print_info("numberOfVertices", ifs.getNumberOfVertices());
+  print_info("numberOfFaces", ifs.getNumberOfFaces());
+  print_info("isTriangleMesh", tv(not ifs.getNormalPerVertex()));
+
+  print_info("colorBinding", ifs.stringBinding(ifs.getColorBinding()));
+  print_info("normalBinding", ifs.stringBinding(ifs.getColorBinding()));
+  print_info("texCoordBinding", ifs.stringBinding(ifs.getTexCoordBinding()));
+
   ostr << indent << "}" << endl;
 }
+
+#undef print_info
